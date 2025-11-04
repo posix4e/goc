@@ -283,7 +283,30 @@ const server = http.createServer(async (req, res) => {
 
     if (method === "POST" && (pathname === "/api/timer/stop" || pathname === "/api/timer/pause")) {
       if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
-      finalizeCurrentSpeaker(pathname.endsWith("pause") ? "pause" : "stop");
+      // Treat stop/pause as PAUSE: do not finalize or record history.
+      const t = state.timer;
+      if (t.startAt && Number.isFinite(t.durationMs)) {
+        const elapsed = nowMs() - t.startAt;
+        const remaining = Math.max(0, Math.min(t.durationMs, t.durationMs - Math.max(0, elapsed)));
+        t.pausedRemainingMs = Math.floor(remaining);
+      }
+      t.startAt = null; // paused
+      // keep current speaker for resume
+      broadcastState();
+      return json(res, 200, { ok: true, timer: state.timer });
+    }
+
+    if (method === "POST" && pathname === "/api/timer/resume") {
+      if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
+      const t = state.timer;
+      const remaining = Number(t.pausedRemainingMs);
+      if (!Number.isFinite(remaining) || remaining <= 0) {
+        return json(res, 400, { error: "not paused" });
+      }
+      t.startAt = nowMs();
+      t.durationMs = Math.max(0, Math.floor(remaining));
+      t.pausedRemainingMs = null;
+      // keep existing speaker as-is
       broadcastState();
       return json(res, 200, { ok: true, timer: state.timer });
     }

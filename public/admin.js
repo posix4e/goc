@@ -39,7 +39,8 @@
     durationInput.value = Math.floor((appState.timer?.durationMs || 0) / 1000);
 
     const t = appState.timer || { durationMs: 0, startAt: null };
-    const remaining = t.startAt ? Math.max(0, t.durationMs - (Date.now() - t.startAt)) : t.durationMs;
+    const paused = Number.isFinite(t.pausedRemainingMs) && (t.pausedRemainingMs || 0) > 0;
+    const remaining = t.startAt ? Math.max(0, t.durationMs - (Date.now() - t.startAt)) : (paused ? t.pausedRemainingMs : t.durationMs);
     remainingEl.textContent = msToClock(remaining);
 
     // History list
@@ -106,8 +107,16 @@
   });
 
   startBtn.addEventListener("click", async () => {
-    const seconds = Math.max(10, Math.min(1800, Number(durationInput.value) || 0));
-    try { await postJSON("/api/timer/start", { durationMs: seconds * 1000 }); } catch (e) { alert(e.message); }
+    const t = appState?.timer || {};
+    const paused = Number.isFinite(t.pausedRemainingMs) && (t.pausedRemainingMs || 0) > 0 && !t.startAt;
+    try {
+      if (paused) {
+        await postJSON("/api/timer/resume");
+      } else {
+        const seconds = Math.max(10, Math.min(1800, Number(durationInput.value) || 0));
+        await postJSON("/api/timer/start", { durationMs: seconds * 1000 });
+      }
+    } catch (e) { alert(e.message); }
   });
 
   stopBtn.addEventListener("click", async () => {

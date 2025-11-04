@@ -44,9 +44,10 @@ In the Admin page, enter the secret in the "Admin Secret" box. Actions send it i
   - `POST /api/pop`
   - `POST /api/clear`
   - `POST /api/timer/config` `{ durationMs }`
-  - `POST /api/timer/start` `{ durationMs? }`
-  - `POST /api/timer/pause` (alias of `stop`)
-  - `POST /api/timer/stop` (legacy alias)
+  - `POST /api/timer/start` `{ durationMs? }` start a new session with the queue head
+  - `POST /api/timer/pause` pause the current session without recording history
+  - `POST /api/timer/resume` resume a paused session (continues remaining time)
+  - `POST /api/timer/stop` (legacy alias of pause)
   - `POST /api/timer/reset`
   - `POST /api/clap` → broadcast a clap event (manual trigger)
   - `POST /api/history/clear` → clear speaking history

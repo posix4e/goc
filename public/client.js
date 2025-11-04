@@ -48,7 +48,8 @@
         triggerClap();
       }
     } else {
-      timerRemainingEl.textContent = msToClock(t.durationMs);
+      const paused = Number.isFinite(t.pausedRemainingMs) && (t.pausedRemainingMs || 0) > 0;
+      timerRemainingEl.textContent = paused ? msToClock(t.pausedRemainingMs) : msToClock(t.durationMs);
       timerRemainingEl.style.color = 'var(--fg)';
       lastStartAt = null;
       clapShownForStart = false;
