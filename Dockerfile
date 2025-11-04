@@ -4,7 +4,8 @@ WORKDIR /app
 
 # Install only production deps (none currently)
 COPY package.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --no-audit --no-fund || npm ci --omit=dev --no-audit --no-fund
+# No lockfile in this repo; install production deps (none currently)
+RUN --mount=type=cache,target=/root/.npm npm i --omit=dev --no-audit --no-fund
 
 # Copy app
 COPY . .
@@ -15,4 +16,3 @@ ENV PORT=8080
 EXPOSE 8080
 
 CMD ["node", "server.js"]
-
