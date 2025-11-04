@@ -111,7 +111,7 @@
   });
 
   stopBtn.addEventListener("click", async () => {
-    try { await postJSON("/api/timer/stop"); } catch (e) { alert(e.message); }
+    try { await postJSON("/api/timer/pause"); } catch (e) { alert(e.message); }
   });
 
   resetBtn.addEventListener("click", async () => {

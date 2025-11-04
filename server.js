@@ -281,9 +281,9 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, timer: state.timer });
     }
 
-    if (method === "POST" && pathname === "/api/timer/stop") {
+    if (method === "POST" && (pathname === "/api/timer/stop" || pathname === "/api/timer/pause")) {
       if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
-      finalizeCurrentSpeaker("stop");
+      finalizeCurrentSpeaker(pathname.endsWith("pause") ? "pause" : "stop");
       broadcastState();
       return json(res, 200, { ok: true, timer: state.timer });
     }

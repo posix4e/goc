@@ -45,7 +45,8 @@ In the Admin page, enter the secret in the "Admin Secret" box. Actions send it i
   - `POST /api/clear`
   - `POST /api/timer/config` `{ durationMs }`
   - `POST /api/timer/start` `{ durationMs? }`
-  - `POST /api/timer/stop`
+  - `POST /api/timer/pause` (alias of `stop`)
+  - `POST /api/timer/stop` (legacy alias)
   - `POST /api/timer/reset`
   - `POST /api/clap` → broadcast a clap event (manual trigger)
   - `POST /api/history/clear` → clear speaking history
