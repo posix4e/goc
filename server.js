@@ -368,6 +368,8 @@ setInterval(() => {
       if (elapsed >= t.durationMs) {
         // Finalize finished speaker and advance queue
         finalizeCurrentSpeaker("auto-expire");
+        // Announce applause to all clients, since the timer hit zero
+        broadcastClap("auto-expire");
         const finished = state.queue.shift() || null;
         if (state.queue[0]) {
           // Start next speaker automatically
