@@ -12,7 +12,7 @@ const state = {
   subject: "",
   queue: [], // { id, name, joinedAt }
   timer: {
-    durationMs: 120000, // default 2 minutes
+    durationMs: 180000, // default 3 minutes
     startAt: null // ms epoch when started, null when stopped
   }
 };
@@ -101,6 +101,9 @@ function broadcast(event, dataObj) {
 
 function broadcastState() {
   broadcast("state", getPublicState());
+}
+function broadcastClap(reason = "manual") {
+  broadcast("clap", { reason, at: nowMs() });
 }
 
 function isAdmin(reqUrl, headers) {
@@ -241,6 +244,12 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, timer: state.timer });
     }
 
+    if (method === "POST" && pathname === "/api/clap") {
+      if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
+      broadcastClap("manual");
+      return json(res, 200, { ok: true });
+    }
+
     // Static files and pages
     if (pathname === "/") {
       return serveStatic(req, res, "/index.html");
@@ -265,4 +274,3 @@ server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Admin secret set? ${ADMIN_SECRET === "change-me" ? "NO (using default)" : "YES"}`);
 });
-

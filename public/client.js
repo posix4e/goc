@@ -13,6 +13,8 @@
 
   let appState = null; // last-known state from server
   let myId = null;
+  let lastStartAt = null;
+  let clapShownForStart = false;
 
   try { myId = JSON.parse(localStorage.getItem("myId")); } catch {}
 
@@ -32,13 +34,23 @@
     // Countdown
     const t = appState.timer || { durationMs: 0, startAt: null };
     if (t.startAt) {
+      if (lastStartAt !== t.startAt) {
+        lastStartAt = t.startAt;
+        clapShownForStart = false;
+      }
       const elapsed = Date.now() - t.startAt;
       const remaining = Math.max(0, t.durationMs - elapsed);
       timerRemainingEl.textContent = msToClock(remaining);
       timerRemainingEl.style.color = remaining === 0 ? 'var(--danger)' : 'var(--fg)';
+      if (remaining === 0 && !clapShownForStart) {
+        clapShownForStart = true;
+        triggerClap();
+      }
     } else {
       timerRemainingEl.textContent = msToClock(t.durationMs);
       timerRemainingEl.style.color = 'var(--fg)';
+      lastStartAt = null;
+      clapShownForStart = false;
     }
 
     // Queue
@@ -79,6 +91,9 @@
         render();
       } catch {}
     });
+    es.addEventListener("clap", () => {
+      triggerClap();
+    });
     es.onerror = () => {
       // Reconnect will happen automatically by EventSource
     };
@@ -118,8 +133,46 @@
   });
 
   // Start
+  ensureClapOverlay();
   connectSSE();
   sync();
   setInterval(render, 250); // smooth ticking
-})();
 
+  function ensureClapOverlay() {
+    if (document.querySelector('.clap-overlay')) return;
+    const el = document.createElement('div');
+    el.className = 'clap-overlay';
+    el.innerHTML = '<div class="clap-content"><div class="count">3</div><div class="clap-text">¡APLAUSOS!</div></div>';
+    document.body.appendChild(el);
+  }
+
+  function triggerClap() {
+    ensureClapOverlay();
+    const overlay = document.querySelector('.clap-overlay');
+    const countEl = overlay.querySelector('.count');
+    const clapText = overlay.querySelector('.clap-text');
+    overlay.classList.add('show');
+    clapText.style.display = 'none';
+    countEl.style.display = 'block';
+    let nums = [3,2,1];
+    let i = 0;
+    countEl.textContent = String(nums[i]);
+    const step = () => {
+      i++;
+      if (i < nums.length) {
+        countEl.textContent = String(nums[i]);
+        setTimeout(step, 700);
+      } else {
+        countEl.style.display = 'none';
+        clapText.style.display = 'block';
+        setTimeout(() => {
+          overlay.classList.remove('show');
+        }, 1500);
+      }
+    };
+    setTimeout(step, 700);
+  }
+
+  // Expose for admin page to reuse
+  window.__triggerClap = triggerClap;
+})();

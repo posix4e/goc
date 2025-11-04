@@ -76,3 +76,42 @@ ol.queue, .queue-admin ol { list-style: decimal; padding-left: 20px; }
 
 .admin section { background: var(--bg-card); padding: 12px; border-radius: 10px; margin: 12px 0; }
 
+/* Clap overlay */
+.clap-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, #ff0080, #ff8c00, #ffd300, #00e676, #00b0ff, #8a2be2);
+  background-size: 600% 600%;
+  animation: rainbowShift 4s linear infinite;
+}
+.clap-overlay.show { display: flex; }
+.clap-content { text-align: center; }
+.clap-content .count {
+  font-size: 22vmin;
+  font-weight: 900;
+  text-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+.clap-content .clap-text {
+  font-size: 18vmin;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(0,0,0,0.7);
+  animation: clapFlash 0.2s steps(2, end) 8;
+}
+
+@keyframes rainbowShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes clapFlash {
+  0% { opacity: 1; filter: drop-shadow(0 0 0px #fff); }
+  50% { opacity: 0.6; filter: drop-shadow(0 0 25px #fff); }
+  100% { opacity: 1; filter: drop-shadow(0 0 0px #fff); }
+}

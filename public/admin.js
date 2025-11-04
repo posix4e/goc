@@ -12,6 +12,7 @@
   const stopBtn = $("#stop");
   const resetBtn = $("#reset");
   const applyBtn = $("#apply");
+  const clapBtn = $("#clap");
   const remainingEl = $("#remaining");
   const configuredEl = $("#configured");
 
@@ -84,6 +85,9 @@
     es.addEventListener("state", (ev) => {
       try { appState = JSON.parse(ev.data); render(); } catch {}
     });
+    es.addEventListener("clap", () => {
+      try { window.__triggerClap && window.__triggerClap(); } catch {}
+    });
   }
 
   subjectInput.addEventListener("change", async () => {
@@ -117,10 +121,22 @@
     try { await postJSON("/api/clear"); } catch (e) { alert(e.message); }
   });
 
+  clapBtn.addEventListener("click", async () => {
+    try { await postJSON("/api/clap"); } catch (e) { alert(e.message); }
+  });
+
   // Start
   connectSSE();
   sync();
   setInterval(sync, 15000);
   setInterval(render, 250);
-})();
 
+  // Inject clap overlay if not present (shared with public page)
+  (function ensureClapOverlay(){
+    if (document.querySelector('.clap-overlay')) return;
+    const el = document.createElement('div');
+    el.className = 'clap-overlay';
+    el.innerHTML = '<div class="clap-content"><div class="count">3</div><div class="clap-text">¡APLAUSOS!</div></div>';
+    document.body.appendChild(el);
+  })();
+})();

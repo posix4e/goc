@@ -9,11 +9,13 @@ No external dependencies: a single Node server with Server-Sent Events (SSE) for
 - Public view: join the queue, see queue with timestamps, live countdown, and connected count.
 - Admin view (secret required for actions): set subject, configure/start/stop/reset countdown, pop/clear queue, see connected clients.
 - Realtime: all changes broadcast via SSE; clients also resync periodically.
+- Aplausos: when the timer runs out, clients show a big 3‑2‑1 countdown and a full‑screen 80s rainbow “¡APLAUSOS!” flash. Admins can also trigger this manually.
 
 ## Run
 
 - Prereq: Node.js 16+
 - Optional: set admin secret via `ADMIN_SECRET`. Default is `change-me`.
+- Default timer: 3 minutes (can be configured by admin).
 
 Commands:
 
@@ -44,54 +46,9 @@ In the Admin page, enter the secret in the "Admin Secret" box. Actions send it i
   - `POST /api/timer/start` `{ durationMs? }`
   - `POST /api/timer/stop`
   - `POST /api/timer/reset`
+  - `POST /api/clap` → broadcast a clap event (manual trigger)
 
 ## Notes
 
 - Timer drift: clients compute time remaining locally and resync every ~15s.
 - Persistence: in-memory only. Restarting the server clears state. For persistence, add a lightweight store (e.g., JSON on disk or a DB).
-
-## Deploy (Fly.io + GitHub Actions)
-
-This repo includes a Dockerfile, `fly.toml`, and a GitHub Actions workflow to deploy on push.
-
-1) Create the Fly app once (choose a unique name):
-
-```
-fly auth signup   # if new to Fly
-fly auth login    # or login
-fly apps create <your-app-name>
-```
-
-2) Update `fly.toml`:
-
-- Set `app = "<your-app-name>"`
-
-3) Add GitHub repo secrets:
-
-- `FLY_API_TOKEN` → `fly auth token` (or from https://fly.io/user/personal_access_tokens)
-- `FLY_APP_NAME` → `<your-app-name>` (optional if you set `fly.toml`)
-- `ADMIN_SECRET` → your admin secret value
-
-4) Push to `main` (or `master`). The workflow builds the Docker image and runs `flyctl deploy`. Secrets are set with `flyctl secrets set`.
-
-After deploy, your app is available at: `https://<your-app-name>.fly.dev/`
-
-Alternative hosts: Render, Railway, or Heroku also work. For serverless platforms (Vercel/Netlify), long-lived SSE connections are not ideal; prefer a container host.
-
-## Bootstrap GitHub Repo (gh CLI)
-
-If you use the GitHub CLI (`gh`), you can create the repo, push code, and set the Actions secrets in one command:
-
-```
-OWNER=<your-gh-username-or-org> \
-REPO=goc \
-VISIBILITY=private \
-FLY_APP_NAME=<your-fly-app> \
-ADMIN_SECRET=<your-admin-secret> \
-FLY_API_TOKEN=<fly-api-token> \
-scripts/bootstrap_github.sh
-```
-
-Prereqs:
-- `gh auth login` (ensure you’re logged in)
-- `fly apps create <your-fly-app>` and optionally `fly secrets set ADMIN_SECRET=... -a <your-fly-app>`
