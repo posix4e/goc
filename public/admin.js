@@ -5,7 +5,6 @@
   const subjectInput = $("#subject");
   const connectedEl = $("#connected");
   const qsizeEl = $("#qsize");
-  const queueEl = $("#queue");
 
   const durationInput = $("#duration");
   const startBtn = $("#start");
@@ -41,15 +40,7 @@
     const remaining = t.startAt ? Math.max(0, t.durationMs - (Date.now() - t.startAt)) : t.durationMs;
     remainingEl.textContent = msToClock(remaining);
 
-    queueEl.innerHTML = "";
-    (appState.queue || []).forEach((item, idx) => {
-      const li = document.createElement("li");
-      const when = new Date(item.joinedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-      const stats = (appState.stats && appState.stats[item.name]) || null;
-      const prior = stats ? ` • habló ${msToClock(stats.totalMs)} (${stats.sessions})` : "";
-      li.textContent = `#${idx+1} ${item.name} • ${when}${prior}`;
-      queueEl.appendChild(li);
-    });
+    // Queue list intentionally not rendered on admin; see public page
   }
 
   function adminHeaders() {
