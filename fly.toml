@@ -11,6 +11,8 @@ primary_region = "iad"
   protocol = "tcp"
   internal_port = 8080
   processes = ["app"]
+  # Run a single machine (state is in-memory). Avoid HA second machine.
+  min_machines_running = 0
 
   [services.concurrency]
     type = "connections"

@@ -73,7 +73,7 @@
 
   async function sync() {
     try {
-      const r = await fetch("/api/state");
+      const r = await fetch("/api/state", { cache: "no-store" });
       if (r.ok) {
         appState = await r.json();
         render();
