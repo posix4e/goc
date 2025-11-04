@@ -10,6 +10,7 @@
   const nameInput = $("#name");
   const positionEl = $("#position");
   const queueEl = $("#queue");
+  const historyEl = $("#history");
 
   let appState = null; // last-known state from server
   let myId = null;
@@ -72,6 +73,19 @@
       positionEl.textContent = `You are #${idx + 1} in queue`;
     } else {
       positionEl.textContent = "";
+    }
+
+    // History of speaking (newest first)
+    if (historyEl) {
+      historyEl.innerHTML = "";
+      const hist = (appState.history || []).slice().reverse();
+      hist.forEach((h) => {
+        const li = document.createElement("li");
+        const ended = h.endedAt ? new Date(h.endedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : "";
+        const dur = msToClock(h.durationMs || 0);
+        li.innerHTML = `<strong>${escapeHtml(h.name)}</strong> <span class="meta">${dur}${ended ? ' • ' + ended : ''}</span>`;
+        historyEl.appendChild(li);
+      });
     }
   }
 

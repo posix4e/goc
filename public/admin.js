@@ -17,6 +17,8 @@
 
   const popBtn = $("#pop");
   const clearBtn = $("#clear");
+  const clearHistoryBtn = $("#clear-history");
+  const historyList = $("#history-admin");
 
   let appState = null;
 
@@ -40,7 +42,18 @@
     const remaining = t.startAt ? Math.max(0, t.durationMs - (Date.now() - t.startAt)) : t.durationMs;
     remainingEl.textContent = msToClock(remaining);
 
-    // Queue list intentionally not rendered on admin; see public page
+    // History list
+    if (historyList) {
+      historyList.innerHTML = "";
+      const hist = (appState.history || []).slice().reverse();
+      hist.forEach((h) => {
+        const li = document.createElement("li");
+        const ended = h.endedAt ? new Date(h.endedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : "";
+        const dur = msToClock(h.durationMs || 0);
+        li.innerHTML = `<strong>${escapeHtml(h.name)}</strong> <span class="meta">${dur}${ended ? ' • ' + ended : ''}</span>`;
+        historyList.appendChild(li);
+      });
+    }
   }
 
   function adminHeaders() {
@@ -114,6 +127,11 @@
     try { await postJSON("/api/clear"); } catch (e) { alert(e.message); }
   });
 
+  clearHistoryBtn.addEventListener("click", async () => {
+    if (!confirm("Clear speaking history?")) return;
+    try { await postJSON("/api/history/clear"); } catch (e) { alert(e.message); }
+  });
+
   clapBtn.addEventListener("click", async () => {
     try { await postJSON("/api/clap"); } catch (e) { alert(e.message); }
   });
@@ -132,4 +150,13 @@
     el.innerHTML = '<div class="clap-content"><div class="count">3</div><div class="clap-text">¡APLAUSOS!</div></div>';
     document.body.appendChild(el);
   })();
+
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 })();

@@ -15,7 +15,8 @@ const state = {
     durationMs: 180000, // default 3 minutes
     startAt: null, // ms epoch when started, null when stopped
     speaker: null // { id, name } snapshot when started
-  }
+  },
+  history: [] // [{ name, id, startedAt, endedAt, durationMs, reason }]
 };
 
 let nextId = 1;
@@ -83,6 +84,7 @@ function getPublicState() {
     queue: state.queue,
     timer: state.timer,
     stats: state.stats || {},
+    history: state.history || [],
     serverNow: nowMs(),
     connected: sseClients.size
   };
@@ -129,6 +131,23 @@ function finalizeCurrentSpeaker(reason) {
     const elapsed = nowMs() - t.startAt;
     const credited = Math.min(Math.max(0, elapsed), t.durationMs);
     safeAddTalkTime(t.speaker.name, credited);
+    // Record a history entry for the speaking session
+    try {
+      const startedAt = t.startAt;
+      const durationMs = Math.floor(credited);
+      const endedAt = startedAt + durationMs;
+      state.history.push({
+        name: String(t.speaker.name),
+        id: t.speaker.id,
+        startedAt,
+        endedAt,
+        durationMs,
+        reason: String(reason || "finalize")
+      });
+      if (state.history.length > 100) {
+        state.history = state.history.slice(-100);
+      }
+    } catch {}
   }
   // Stop timer by default when finalizing
   state.timer.startAt = null;
@@ -285,6 +304,13 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true });
     }
 
+    if (method === "POST" && pathname === "/api/history/clear") {
+      if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
+      state.history = [];
+      broadcastState();
+      return json(res, 200, { ok: true });
+    }
+
     // Static files and pages
     if (pathname === "/") {
       return serveStatic(req, res, "/index.html");
@@ -309,3 +335,19 @@ server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Admin secret set? ${ADMIN_SECRET === "change-me" ? "NO (using default)" : "YES"}`);
 });
+
+// Auto-finalize current speaker when timer reaches zero
+setInterval(() => {
+  try {
+    const t = state.timer;
+    if (t && t.startAt && Number.isFinite(t.durationMs)) {
+      const elapsed = nowMs() - t.startAt;
+      if (elapsed >= t.durationMs) {
+        finalizeCurrentSpeaker("auto-expire");
+        broadcastState();
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}, 250);

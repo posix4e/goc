@@ -6,7 +6,7 @@ No external dependencies: a single Node server with Server-Sent Events (SSE) for
 
 ## Features
 
-- Public view: join the queue, see queue with timestamps, live countdown, and connected count.
+- Public view: join the queue, see queue with timestamps, live countdown, connected count, and a speaking history.
 - Admin view (secret required for actions): set subject, configure/start/stop/reset countdown, pop/clear queue, see connected clients.
 - Realtime: all changes broadcast via SSE; clients also resync periodically.
 - Aplausos: when the timer runs out, clients show a big 3‑2‑1 countdown and a full‑screen 80s rainbow “¡APLAUSOS!” flash. Admins can also trigger this manually.
@@ -36,7 +36,7 @@ In the Admin page, enter the secret in the "Admin Secret" box. Actions send it i
 
 ## API (brief)
 
-- `GET /api/state` → current subject, queue, timer, connected count
+- `GET /api/state` → current subject, queue, timer, connected count, stats, and history
 - `GET /events` (SSE) → `state` events with same payload as `/api/state`
 - `POST /api/join` `{ name }` → joins queue
 - Admin (require secret):
@@ -48,6 +48,7 @@ In the Admin page, enter the secret in the "Admin Secret" box. Actions send it i
   - `POST /api/timer/stop`
   - `POST /api/timer/reset`
   - `POST /api/clap` → broadcast a clap event (manual trigger)
+  - `POST /api/history/clear` → clear speaking history
 
 ## Notes
 
