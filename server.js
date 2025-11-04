@@ -13,7 +13,8 @@ const state = {
   queue: [], // { id, name, joinedAt }
   timer: {
     durationMs: 180000, // default 3 minutes
-    startAt: null // ms epoch when started, null when stopped
+    startAt: null, // ms epoch when started, null when stopped
+    speaker: null // { id, name } snapshot when started
   }
 };
 
@@ -80,6 +81,7 @@ function getPublicState() {
     subject: state.subject,
     queue: state.queue,
     timer: state.timer,
+    stats: state.stats || {},
     serverNow: nowMs(),
     connected: sseClients.size
   };
@@ -104,6 +106,32 @@ function broadcastState() {
 }
 function broadcastClap(reason = "manual") {
   broadcast("clap", { reason, at: nowMs() });
+}
+
+function ensureStats() {
+  if (!state.stats) state.stats = {}; // name -> { totalMs, sessions }
+}
+
+function safeAddTalkTime(name, ms) {
+  if (!name || !Number.isFinite(ms) || ms <= 0) return;
+  ensureStats();
+  const key = String(name);
+  const s = state.stats[key] || { totalMs: 0, sessions: 0 };
+  s.totalMs += Math.max(0, Math.floor(ms));
+  s.sessions += 1;
+  state.stats[key] = s;
+}
+
+function finalizeCurrentSpeaker(reason) {
+  const t = state.timer;
+  if (t.startAt && t.speaker && t.durationMs) {
+    const elapsed = nowMs() - t.startAt;
+    const credited = Math.min(Math.max(0, elapsed), t.durationMs);
+    safeAddTalkTime(t.speaker.name, credited);
+  }
+  // Stop timer by default when finalizing
+  state.timer.startAt = null;
+  state.timer.speaker = null;
 }
 
 function isAdmin(reqUrl, headers) {
@@ -185,6 +213,8 @@ const server = http.createServer(async (req, res) => {
 
     if (method === "POST" && pathname === "/api/pop") {
       if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
+      // credit current speaker, then pop
+      finalizeCurrentSpeaker("pop");
       const popped = state.queue.shift() || null;
       broadcastState();
       return json(res, 200, { ok: true, popped });
@@ -226,20 +256,24 @@ const server = http.createServer(async (req, res) => {
         }
       }
       state.timer.startAt = nowMs();
+      state.timer.speaker = state.queue[0] ? { id: state.queue[0].id, name: state.queue[0].name } : null;
       broadcastState();
       return json(res, 200, { ok: true, timer: state.timer });
     }
 
     if (method === "POST" && pathname === "/api/timer/stop") {
       if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
-      state.timer.startAt = null;
+      finalizeCurrentSpeaker("stop");
       broadcastState();
       return json(res, 200, { ok: true, timer: state.timer });
     }
 
     if (method === "POST" && pathname === "/api/timer/reset") {
       if (!isAdmin(req.url, req.headers)) return json(res, 403, { error: "forbidden" });
+      // credit previous, then restart with current queue head as speaker
+      finalizeCurrentSpeaker("reset");
       state.timer.startAt = nowMs();
+      state.timer.speaker = state.queue[0] ? { id: state.queue[0].id, name: state.queue[0].name } : null;
       broadcastState();
       return json(res, 200, { ok: true, timer: state.timer });
     }

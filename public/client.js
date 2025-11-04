@@ -53,14 +53,16 @@
       clapShownForStart = false;
     }
 
-    // Queue
+    // Queue with prior talk time
     queueEl.innerHTML = "";
     const q = appState.queue || [];
     q.forEach((item, idx) => {
       const li = document.createElement("li");
       if (item.id === myId) li.classList.add("me");
       const when = new Date(item.joinedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-      li.innerHTML = `<strong>${escapeHtml(item.name)}</strong> <span class="meta">#${idx+1} • ${when}</span>`;
+      const stats = (appState.stats && appState.stats[item.name]) || null;
+      const prior = stats ? ` • habló ${msToClock(stats.totalMs)}` : "";
+      li.innerHTML = `<strong>${escapeHtml(item.name)}</strong> <span class="meta">#${idx+1} • ${when}${prior}</span>`;
       queueEl.appendChild(li);
     });
 

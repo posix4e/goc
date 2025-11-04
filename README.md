@@ -10,6 +10,7 @@ No external dependencies: a single Node server with Server-Sent Events (SSE) for
 - Admin view (secret required for actions): set subject, configure/start/stop/reset countdown, pop/clear queue, see connected clients.
 - Realtime: all changes broadcast via SSE; clients also resync periodically.
 - Aplausos: when the timer runs out, clients show a big 3‑2‑1 countdown and a full‑screen 80s rainbow “¡APLAUSOS!” flash. Admins can also trigger this manually.
+- Social pressure: per‑name talk time is tracked and shown next to queue entries (total time and sessions), encouraging concise turns.
 
 ## Run
 

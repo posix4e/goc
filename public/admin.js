@@ -45,7 +45,9 @@
     (appState.queue || []).forEach((item, idx) => {
       const li = document.createElement("li");
       const when = new Date(item.joinedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-      li.textContent = `#${idx+1} ${item.name} • ${when}`;
+      const stats = (appState.stats && appState.stats[item.name]) || null;
+      const prior = stats ? ` • habló ${msToClock(stats.totalMs)} (${stats.sessions})` : "";
+      li.textContent = `#${idx+1} ${item.name} • ${when}${prior}`;
       queueEl.appendChild(li);
     });
   }
