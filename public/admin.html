@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin • Queue + Timer</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container admin">
+      <header>
+        <h1>Admin</h1>
+        <div><small>Secret required for actions</small></div>
+      </header>
+
+      <section class="meta">
+        <label>Admin Secret <input id="secret" type="password" placeholder="enter admin secret" /></label>
+        <label>Subject <input id="subject" type="text" placeholder="Meeting subject" /></label>
+        <div class="row">
+          <div>Connected: <span id="connected">0</span></div>
+          <div>Queue size: <span id="qsize">0</span></div>
+        </div>
+      </section>
+
+      <section class="timer">
+        <h2>Timer</h2>
+        <div class="row">
+          <label>Duration (seconds) <input id="duration" type="number" min="10" max="1800" step="5" value="120" /></label>
+        </div>
+        <div class="row">
+          <button id="start">Start</button>
+          <button id="stop">Stop</button>
+          <button id="reset">Reset</button>
+          <button id="apply">Apply Duration</button>
+        </div>
+        <div class="row">
+          <div>Remaining: <span id="remaining">00:00</span></div>
+          <div>Configured: <span id="configured">--:--</span></div>
+        </div>
+      </section>
+
+      <section class="queue-admin">
+        <h2>Queue</h2>
+        <div class="row">
+          <button id="pop">Pop Next</button>
+          <button id="clear">Clear All</button>
+        </div>
+        <ol id="queue"></ol>
+      </section>
+    </main>
+    <script src="/admin.js"></script>
+  </body>
+  </html>
+

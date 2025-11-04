@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Queue + Timer</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1 id="subject">Meeting</h1>
+        <div class="timer">
+          <div id="timer-remaining" class="timer-remaining">00:00</div>
+          <div class="timer-meta">
+            <span>Configured: <span id="timer-config">--:--</span></span>
+            <span class="dot">•</span>
+            <span>Connected: <span id="connected">0</span></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="join">
+        <form id="join-form">
+          <input id="name" type="text" placeholder="Your name" maxlength="100" required />
+          <button type="submit">Join Queue</button>
+        </form>
+        <div id="position" class="position"></div>
+      </section>
+
+      <section>
+        <h2>Queue</h2>
+        <ol id="queue" class="queue"></ol>
+      </section>
+    </main>
+    <script src="/client.js"></script>
+  </body>
+  </html>
+

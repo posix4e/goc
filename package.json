@@ -1,0 +1,14 @@
+{
+  "name": "goc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real-time queue and countdown app (no external deps)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
+
