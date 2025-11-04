@@ -366,7 +366,14 @@ setInterval(() => {
     if (t && t.startAt && Number.isFinite(t.durationMs)) {
       const elapsed = nowMs() - t.startAt;
       if (elapsed >= t.durationMs) {
+        // Finalize finished speaker and advance queue
         finalizeCurrentSpeaker("auto-expire");
+        const finished = state.queue.shift() || null;
+        if (state.queue[0]) {
+          // Start next speaker automatically
+          state.timer.startAt = nowMs();
+          state.timer.speaker = { id: state.queue[0].id, name: state.queue[0].name };
+        }
         broadcastState();
       }
     }
